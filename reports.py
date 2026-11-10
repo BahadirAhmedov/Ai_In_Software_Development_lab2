@@ -14,7 +14,7 @@ class ScheduledReport:
     id: int
     name: str
     run_at: datetime
-    status: str = "scheduled"  # scheduled | done
+    status: str = "scheduled"  # scheduled | done | cancelled
 
 
 class ReportScheduler:
@@ -36,6 +36,14 @@ class ReportScheduler:
             return self._reports[report_id]
         except KeyError:
             raise ReportNotFoundError(report_id) from None
+
+    def cancel(self, report_id: int) -> ScheduledReport:
+        """Отменяет запланированный отчёт; повторная отмена ничего не делает."""
+        report = self.get(report_id)
+        if report.status == "done":
+            raise ValueError("cannot cancel a report that has already run")
+        report.status = "cancelled"
+        return report
 
     def list_reports(self) -> list[ScheduledReport]:
         return sorted(self._reports.values(), key=lambda r: r.run_at)
